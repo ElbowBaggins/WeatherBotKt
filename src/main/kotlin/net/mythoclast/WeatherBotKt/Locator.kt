@@ -7,7 +7,7 @@ import org.apache.commons.lang3.tuple.Triple
 object Locator {
 
     fun getLatLongAndAddressForName(locationName: String): Triple<Double, Double, String>? {
-        val results = GeocodingApi.geocode(GeoApiContext().setApiKey(Keys.GEOCODE.toString()),
+        val results = GeocodingApi.geocode(GeoApiContext().setApiKey(ConfigFile.geocodeKey),
                 locationName).awaitIgnoreError()
         if (null == results || 0 == results.size) {
             return null

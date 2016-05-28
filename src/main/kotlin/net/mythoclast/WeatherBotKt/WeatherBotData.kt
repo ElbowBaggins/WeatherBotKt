@@ -50,7 +50,7 @@ object WeatherBotData {
                 locationInfo.middle.toString(),
                 units,
                 ForecastIO.LANG_ENGLISH,
-                Keys.FORECAST.toString())
+                ConfigFile.forecastKey)
 
         val unitType = FIOFlags(requestData).units() ?: return ERROR_MSG
 

@@ -23,20 +23,33 @@ class WeatherBot internal constructor() : ListenerAdapter() {
 
     init {
         val confBuilder = Configuration.Builder()
-        confBuilder.name = "WeatherBot"
-        confBuilder.login = "radarkt"
-        confBuilder.realName = "Sir Wethers \"Radar\" Bottingshire IV Esq."
-        confBuilder.version = "WeatherBotKt 1.1.3"
-        confBuilder.finger = "Where's your LeBaron, Freddy?"
+        confBuilder.name = ConfigFile.name
+        confBuilder.login = ConfigFile.login
+        confBuilder.realName = ConfigFile.realName
+        confBuilder.nickservPassword = ConfigFile.nickservPassword
+        confBuilder.finger = ConfigFile.finger
+        confBuilder.addServer(ConfigFile.server, ConfigFile.port)
+
+        if(ConfigFile.autoReconnectAttempts != 0) {
+            confBuilder.isAutoReconnect = true
+            if(ConfigFile.autoReconnectAttempts == -1) {
+                confBuilder.autoReconnectAttempts = Int.MAX_VALUE
+            } else {
+                confBuilder.autoReconnectAttempts = ConfigFile.autoReconnectAttempts
+            }
+        }
+
+        if(ConfigFile.ssl) {
+            confBuilder.socketFactory = UtilSSLSocketFactory().trustAllCertificates()
+        }
+
+        for(channel in ConfigFile.channels) {
+            confBuilder.addAutoJoinChannel(channel.asString)
+        }
+
+        confBuilder.version = "WeatherBotKt 1.2"
         confBuilder.isAutoNickChange = true
-        confBuilder.isAutoReconnect = true
         confBuilder.isShutdownHookEnabled = false
-        confBuilder.autoReconnectAttempts = Int.MAX_VALUE
-        confBuilder.nickservPassword = "YOUR NICKSERV PASSWORD"
-        // Remove the line below if you're not using SSL. Or don't. Maybe it doesn't matter. Maybe it does.
-        confBuilder.socketFactory = UtilSSLSocketFactory().trustAllCertificates()
-        confBuilder.addServer("irc.somewhere.wat", 6697)
-        confBuilder.addAutoJoinChannel("#somewhereland")
         confBuilder.addListener(this)
         this.config = confBuilder.buildConfiguration()
 
@@ -146,7 +159,7 @@ class WeatherBot internal constructor() : ListenerAdapter() {
             val thisBot = thisBotRef.get()
             if (PircBotX.State.DISCONNECTED != thisBot.state) {
                 thisBot.stopBotReconnect()
-                thisBot.sendIRC().quitServer("Back to you, cunt.")
+                thisBot.sendIRC().quitServer(ConfigFile.partMessage)
                 try {
                     if (thisBot.isConnected) {
                         // Woo reflection!
