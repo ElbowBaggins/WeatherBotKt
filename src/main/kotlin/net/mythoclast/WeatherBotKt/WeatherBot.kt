@@ -1,5 +1,8 @@
 package net.mythoclast.WeatherBotKt
 
+import com.github.salomonbrys.kotson.*
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import org.pircbotx.Configuration
 import org.pircbotx.PircBotX
 import org.pircbotx.UtilSSLSocketFactory
@@ -7,17 +10,20 @@ import org.pircbotx.hooks.ListenerAdapter
 import org.pircbotx.hooks.events.KickEvent
 import org.pircbotx.hooks.events.PartEvent
 import org.pircbotx.hooks.types.GenericMessageEvent
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStreamWriter
 
 import java.lang.ref.WeakReference
 import java.net.Socket
-import java.util.Arrays
-import java.util.HashMap
+import java.util.*
 import java.util.logging.Logger
 
 class WeatherBot internal constructor() : ListenerAdapter() {
 
-    private val lastLocation: MutableMap<String, String>
-    private val regex = "((\\.w(f|c(a?)|uk)?)(long)?)(( ).*)?"
+    private val regex = "((\\.(setlocation|(w(f|c(a?)|uk)?)(long)?)))(( ).*)?"
+    private val userLocations: MutableMap<String, String>
 
     val config: Configuration
 
@@ -53,12 +59,18 @@ class WeatherBot internal constructor() : ListenerAdapter() {
         confBuilder.addListener(this)
         this.config = confBuilder.buildConfiguration()
 
-        lastLocation = HashMap<String, String>()
+        // Attempt to read locations file. Just use a blank map if we can't do that for some reason.
+        try {
+            userLocations = Gson().fromJson<MutableMap<String, String>>(File("locations.json")
+                    .readText(Charsets.UTF_8))
+        } catch (e: IOException) {
+            userLocations = HashMap<String, String>()
+        }
     }
 
     override fun onKick(event: KickEvent) {
         if(event.recipient?.nick.equals(config.name)) {
-            rejoin(event.channel.getBot<PircBotX>(), event.channel!!.name)
+            rejoin(event.channel.getBot<PircBotX>(), event.channel.name)
         }
     }
 
@@ -74,16 +86,15 @@ class WeatherBot internal constructor() : ListenerAdapter() {
         val requestUser: String
         val location: String
 
-        // When someone says .whelp
+        // When someone says .wbhelp
         if (event?.message?.startsWith(".wbhelp") ?: false) {
             event?.respondWith("Hello! I support several commands. .w (Automatic, Region-Based Units), .wf ('Murrkuh), " +
                     ".wc (All SI Units), .wca ('Canadian' Units), and .wuk ('British') units each deliver a weather" +
                     " overview containing only the most commonly wanted data. Their siblings .wlong, .wflong, .wclong, " +
                     ".wcalong, and .wuklong provide all available fields. ")
             event?.respondWith("All of these commands take one argument: " +
-                    "the location you want to see weather information for. If you have already requested weather data " +
-                    "recently, then you may invoke any of the above with no argument and they will use your last-" +
-                    "entered location.")
+                    "the location you want to see weather information for. You can also supply a location to the " +
+                    ".setlocation command to use any of the previous commands with no arguments.")
             return
         }
         if (event?.message?.matches(regex.toRegex()) ?: false) {
@@ -101,20 +112,14 @@ class WeatherBot internal constructor() : ListenerAdapter() {
                 // The location is the result of joining the rest of the incoming message string back together.
                 location = splitMessage.subList(1, splitMessage.size).joinToString(" ")
 
-                // If this wasn't blank, put it in the last location map so that users can
-                // just run the command with no location.
-                if(!"".equals(location)) {
-                    lastLocation[requestUser] = location
-                }
             } else {
-
                 // If we're here, a location was not supplied with the command.
-                // Lets see what happens if we try to get the user's last location used
-                location = lastLocation[requestUser] ?: ""
+                // Lets see what happens if we try to get the user's set location (if any)
+                location = userLocations[requestUser] ?: ""
             }
 
 
-            // If this STILL comes back null, tell the user they have to supply a location.
+            // If this STILL comes back empty, tell the user they have to supply a location.
             // Otherwise, run through the command list.
             if ("".equals(location)) {
                 event.respondWith("Please specify a location.")
@@ -138,6 +143,9 @@ class WeatherBot internal constructor() : ListenerAdapter() {
                 event.respondWith(WeatherBotData.longCanadaSummary(location))
             } else if (".wuklong".equals(splitMessage[0])) {
                 event.respondWith(WeatherBotData.longUKSummary(location))
+            } else if (".setlocation".equals(splitMessage[0])) {
+                userLocations[requestUser] = location
+                event.respondWith("$requestUser's location is set to: '$location'.")
             }
         }
     }
@@ -147,19 +155,23 @@ class WeatherBot internal constructor() : ListenerAdapter() {
         bot.send().joinChannel(channelName)
     }
 
-    internal class BotShutdownHook(bot: PircBotX) : Thread() {
+    internal class BotShutdownHook(bot: PircBotX, weatherBot: WeatherBot) : Thread() {
         private val thisBotRef: WeakReference<PircBotX>
+        private val weatherBotRef: WeakReference<WeatherBot>
 
         init {
             this.thisBotRef = WeakReference(bot)
+            this.weatherBotRef = WeakReference(weatherBot)
             name = "WeatherBot-Shutdown Hook"
         }
 
         override fun run() {
             val thisBot = thisBotRef.get()
+            val weatherBot = weatherBotRef.get()
             if (PircBotX.State.DISCONNECTED != thisBot.state) {
                 thisBot.stopBotReconnect()
                 thisBot.sendIRC().quitServer(ConfigFile.partMessage)
+                Logger.getLogger("WeatherBot").severe("Part Message: " + ConfigFile.partMessage)
                 try {
                     if (thisBot.isConnected) {
                         // Woo reflection!
@@ -173,6 +185,10 @@ class WeatherBot internal constructor() : ListenerAdapter() {
                 } catch (ex: Exception) {
                     Logger.getLogger("WeatherBot").finest("Unable to forcibly close socket\n" + ex.toString())
                 }
+                // Attempt to serialize location map
+                OutputStreamWriter(FileOutputStream("locations.json")).use {
+                    it.write(GsonBuilder().setPrettyPrinting().create().toJson(weatherBot.userLocations))
+                }
             }
         }
     }
@@ -180,10 +196,11 @@ class WeatherBot internal constructor() : ListenerAdapter() {
 
 fun main(args: Array<String>) {
     //Create our bot with the configuration
-    val bot = PircBotX(WeatherBot().config)
+    val weatherBot = WeatherBot()
+    val ircBot = PircBotX(weatherBot.config)
 
     // Add customized version of built-in shutdown hook.
-    Runtime.getRuntime().addShutdownHook(WeatherBot.BotShutdownHook(bot))
+    Runtime.getRuntime().addShutdownHook(WeatherBot.BotShutdownHook(ircBot, weatherBot))
     //Connect to the server
-    bot.startBot()
+    ircBot.startBot()
 }

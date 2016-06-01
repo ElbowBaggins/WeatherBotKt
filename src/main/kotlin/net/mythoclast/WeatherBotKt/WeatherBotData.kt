@@ -72,12 +72,8 @@ object WeatherBotData {
                 windUnit = "m/s"
             }
 
-            // The UK still uses miles? That's weird but okay.
-            if (ForecastIO.UNITS_UK != unitType) {
-                distanceUnit = "km"
-            }
-
             // Everywhere that isn't the US uses SI units for this, apparently.
+            distanceUnit = "km"
             pressureUnit = "hPa"
             precipIntensityUnit = "mm/hr"
             precipAccumUnit = "cm"
