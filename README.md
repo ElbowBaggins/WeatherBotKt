@@ -17,18 +17,18 @@ To stop WeatherBot, send SIGTERM to the appropriate process. (Determining this i
 
 ## Supported Commands
 ### Utility Commands
-*.wbhelp - Replies with a help message that outlines available commands
-*.setlocation <location> - Sets the user's location so that they may invoke any of the following commands without the location parameter
+* .wbhelp - Replies with a help message that outlines available commands
+* .setlocation <location> - Sets the user's location so that they may invoke any of the following commands without the location parameter
 ### Weather Data Commands
 #### All of the following take one parameter, the location one wishes to see weather data for. If the user has already set their location with .setlocation this parameter is optional.
-*.w - Provides data with automatic, region-based units)
-*.wf (Provides data with "American" units)
-*.wc (Provides data with SI units)
-*.wca (Provides data with "Canadian" units)
-*.wuk (Provides data with "British" units)
+* .w - Provides data with automatic, region-based units)
+* .wf (Provides data with "American" units)
+* .wc (Provides data with SI units)
+* .wca (Provides data with "Canadian" units)
+* .wuk (Provides data with "British" units)
 #### All of the following are identical to their preceding siblings but provide more "long-form" detail
-*.wlong
-*.wflong
-*.wclong
-*.wcalong
-*.wuklong
+* .wlong
+* .wflong
+* .wclong
+* .wcalong
+* .wuklong
