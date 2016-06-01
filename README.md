@@ -19,6 +19,7 @@ To stop WeatherBot, send SIGTERM to the appropriate process. (Determining this i
 ### Utility Commands
 * .wbhelp - Replies with a help message that outlines available commands
 * .setlocation <location> - Sets the user's location so that they may invoke any of the following commands without the location parameter
+
 ### Weather Data Commands
 #### All of the following take one parameter, the location one wishes to see weather data for. If the user has already set their location with .setlocation this parameter is optional.
 * .w - Provides data with automatic, region-based units)
