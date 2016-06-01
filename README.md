@@ -27,6 +27,7 @@ To stop WeatherBot, send SIGTERM to the appropriate process. (Determining this i
 * .wc (Provides data with SI units)
 * .wca (Provides data with "Canadian" units)
 * .wuk (Provides data with "British" units)
+
 #### All of the following are identical to their preceding siblings but provide more "long-form" detail
 * .wlong
 * .wflong
