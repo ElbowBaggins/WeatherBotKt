@@ -6,46 +6,37 @@ object WeatherBotData {
 
     private val ERROR_MSG = "An error occurred while attempting to contact Dark Sky."
 
-    private fun convertBearing(bearing: Double): String {
-        if (360.0 == bearing || 0.0 == bearing) {
-            return "Due North"
-        } else if (0 < bearing && 45 > bearing) {
-            return (45 - bearing).toString() + "° NNE"
-        } else if (45.0 == bearing) {
-            return "due Northeast"
-        } else if (45 < bearing && 90 > bearing) {
-            return (90 - bearing).toString() + "° ENE"
-        } else if (90.0 == bearing) {
-            return "due East"
-        } else if (90 < bearing && 135 > bearing) {
-            return (135 - bearing).toString() + "° ESE"
-        } else if (135.0 == bearing) {
-            return "due Southeast"
-        } else if (135 < bearing && 180 > bearing) {
-            return (180 - bearing).toString() + "° SSE"
-        } else if (180.0 == bearing) {
-            return "due South"
-        } else if (180 < bearing && 225 > bearing) {
-            return (225 - bearing).toString() + "° SSW"
-        } else if (225.0 == bearing) {
-            return "due Southwest"
-        } else if (225 < bearing && 270 > bearing) {
-            return (270 - bearing).toString() + "° WSW"
-        } else if (270.0 == bearing) {
-            return "due West"
-        } else if (270 < bearing && 315 > bearing) {
-            return (315 - bearing).toString() + "° WNW"
-        } else if (315.0 == bearing) {
-            return "due Northwest"
-        } else if (315.0 < bearing && 360 > bearing) {
-            return (360 - bearing).toString() + "° NNW"
+    private fun convertBearing(bearing: Double) : String {
+        val direction = getBearingDirection(bearing)
+        if(!direction.startsWith("due")) {
+            return getBearingDegrees(bearing).toString() + direction;
         } else {
-            return "?"
+            return direction;
         }
     }
 
+    private fun getBearingDirection(bearing: Double) : String {
+        val adjustedBearing = ((bearing / 22.5) + 0.5)
+        val dirArray = arrayOf("due North", "° NNE", "° NE", "° ENE",
+                "due East", "° ESE", "° SE", "° SSE",
+                "due South", "° SSW", "° SW", "° WSW",
+                "due West", "° WNW", "° NW", "° NNW")
+        return dirArray[adjustedBearing.toInt() % 16]
+    }
+
+    private fun getBearingDegrees(bearing: Double) : Double {
+        val adjustedBearing = ((bearing / 22.5) + 0.5)
+        val bearingArray = doubleArrayOf(0.0, 22.5, 45.0, 67.5,
+                90.0, 112.5, 135.0, 157.5,
+                180.0, 202.5, 225.0, 247.5,
+                270.0, 292.5, 315.0, 337.5)
+        return Math.abs(bearingArray[Math.max(Math.round(adjustedBearing % 16).toInt() - 1, 0)] - bearing)
+    }
+
     private fun getFormattedSummary(units: String, location: String, complete: Boolean): String {
-        val locationInfo = Locator.getLatLongAndAddressForName(location) ?: return "Could not get location data for \"" + location + "\""
+        val locationInfo = Locator.getLatLongAndAddressForName(location) ?:
+                return "Could not get location data for \"$location\""
+
         val requestData = ForecastIO(locationInfo.left.toString(),
                 locationInfo.middle.toString(),
                 units,
@@ -177,14 +168,6 @@ object WeatherBotData {
                 dataBuilder.append(" || The nearest storm is ")
                            .append("${String.format("%.0f", currently.nearestStormDistance())}$distanceUnit away, ")
                            .append("${convertBearing(currently.nearestStormBearing())}.")
-            }
-        }
-
-        if (null != currently.time()) {
-            dataBuilder.append(" || Sampled at: ${currently.time()}")
-
-            if (null != currently.timezone) {
-                dataBuilder.append(" (${currently.timezone})")
             }
         }
 
