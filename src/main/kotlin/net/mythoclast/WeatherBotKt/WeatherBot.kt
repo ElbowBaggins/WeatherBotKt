@@ -95,7 +95,6 @@ class WeatherBot internal constructor() : ListenerAdapter() {
             event?.respondWith("All of these commands take one argument: " +
                     "the location you want to see weather information for. You can also supply a location to the " +
                     ".setlocation command to use any of the previous commands with no arguments.")
-            return
         }
         if (event?.message?.matches(regex.toRegex()) ?: false) {
 

@@ -5,32 +5,30 @@ import com.github.dvdme.ForecastIOLib.*
 object WeatherBotData {
 
     private val ERROR_MSG = "An error occurred while attempting to contact Dark Sky."
+    private val DIR_ARRAY = arrayOf("due North", "° NNE", "° NE", "° ENE",
+            "due East", "° ESE", "° SE", "° SSE",
+            "due South", "° SSW", "° SW", "° WSW",
+            "due West", "° WNW", "° NW", "° NNW")
+    private val BEARING_ARRAY = doubleArrayOf(0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0, 360.0)
 
     private fun convertBearing(bearing: Double) : String {
-        val direction = getBearingDirection(bearing)
-        if(!direction.startsWith("due")) {
-            return getBearingDegrees(bearing).toString() + direction;
-        } else {
-            return direction;
+        var bearingDirection = getBearingDirection(bearing)
+
+        if(bearingDirection.startsWith("due")) {
+            if(1 > bearing % 90.0) {
+                return bearingDirection;
+            }
+            bearingDirection = getBearingDirection(bearing + 22.5)
         }
+        return "${getAdjustedBearing(bearing)}$bearingDirection"
     }
 
     private fun getBearingDirection(bearing: Double) : String {
-        val adjustedBearing = ((bearing / 22.5) + 0.5)
-        val dirArray = arrayOf("due North", "° NNE", "° NE", "° ENE",
-                "due East", "° ESE", "° SE", "° SSE",
-                "due South", "° SSW", "° SW", "° WSW",
-                "due West", "° WNW", "° NW", "° NNW")
-        return dirArray[adjustedBearing.toInt() % 16]
+        return DIR_ARRAY[(((bearing / 22.5) + 0.5) % 16).toInt()]
     }
 
-    private fun getBearingDegrees(bearing: Double) : Double {
-        val adjustedBearing = ((bearing / 22.5) + 0.5)
-        val bearingArray = doubleArrayOf(0.0, 22.5, 45.0, 67.5,
-                90.0, 112.5, 135.0, 157.5,
-                180.0, 202.5, 225.0, 247.5,
-                270.0, 292.5, 315.0, 337.5)
-        return Math.abs(bearingArray[Math.max(Math.round(adjustedBearing % 16).toInt() - 1, 0)] - bearing)
+    private fun getAdjustedBearing(bearing: Double) : Double {
+        return Math.abs(bearing - BEARING_ARRAY[((bearing / 45) % 9).toInt()])
     }
 
     private fun getFormattedSummary(units: String, location: String, complete: Boolean): String {
@@ -145,30 +143,25 @@ object WeatherBotData {
             }
 
             // This only shows precipitation intensity if something very skywatery is happenng.
-            if (null != currently.precipIntensity() && null != currently.summary() &&
-                    (currently.summary().contains("rain") || currently.summary().contains("storm") ||
-                            currently.summary().contains("snow") || currently.summary().contains("Rain") ||
-                            currently.summary().contains("Snow") || currently.summary().contains("Storm"))) {
-
+            if (null != currently.precipIntensity() && currently.precipIntensity() > 0) {
                 dataBuilder.append(" || Precipitation Intensity: ${currently.precipIntensity()}$precipIntensityUnit")
             }
 
             // This only shows skypowder accumulation if
-            if (null != currently.precipAccumulation() && null != currently.summary() &&
-                    (currently.summary().contains("snow") || currently.summary().contains("Snow"))) {
-
+            if (null != currently.precipAccumulation() && currently.precipAccumulation() > 0) {
                 dataBuilder.append(" || Precipitation Accumulation: ${currently.precipAccumulation()} $precipAccumUnit")
             }
 
             if (null != currently.cloudCover()) {
                 dataBuilder.append(" || Cloud Cover: ${String.format("%.0f", currently.cloudCover() * 100.0)}%")
             }
+        }
 
-            if(null != currently.nearestStormDistance() && null != currently.nearestStormBearing()) {
-                dataBuilder.append(" || The nearest storm is ")
-                           .append("${String.format("%.0f", currently.nearestStormDistance())}$distanceUnit away, ")
-                           .append("${convertBearing(currently.nearestStormBearing())}.")
-            }
+        // Always show storm distance info last
+        if(null != currently.nearestStormDistance() && null != currently.nearestStormBearing()) {
+            dataBuilder.append(" || The nearest storm is ")
+                    .append("${String.format("%.0f", currently.nearestStormDistance())}$distanceUnit away, ")
+                    .append("${convertBearing(currently.nearestStormBearing())}.")
         }
 
         return dataBuilder.toString()
