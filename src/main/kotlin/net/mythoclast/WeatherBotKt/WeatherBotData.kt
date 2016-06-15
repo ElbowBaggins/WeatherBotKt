@@ -5,11 +5,8 @@ import com.github.dvdme.ForecastIOLib.*
 object WeatherBotData {
 
     private val ERROR_MSG = "An error occurred while attempting to contact Dark Sky."
-    private val DIR_ARRAY = arrayOf("due North", "° NNE", "° NE", "° ENE",
-            "due East", "° ESE", "° SE", "° SSE",
-            "due South", "° SSW", "° SW", "° WSW",
-            "due West", "° WNW", "° NW", "° NNW")
-    private val BEARING_ARRAY = doubleArrayOf(0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0, 360.0)
+    private val DIR_ARRAY = arrayOf("due North", "° NNE", "° NE", "° ENE", "due East", "° ESE", "° SE", "° SSE",
+            "due South", "° SSW", "° SW", "° WSW", "due West", "° WNW", "° NW", "° NNW")
 
     private fun convertBearing(bearing: Double) : String {
         var bearingDirection = getBearingDirection(bearing)
@@ -27,8 +24,8 @@ object WeatherBotData {
         return DIR_ARRAY[(((bearing / 22.5) + 0.5) % 16).toInt()]
     }
 
-    private fun getAdjustedBearing(bearing: Double) : Double {
-        return Math.abs(bearing - BEARING_ARRAY[((bearing / 45) % 9).toInt()])
+    private fun getAdjustedBearing(bearing: Double) : Int {
+        return Math.abs(bearing - (((bearing / 45) % 9).toInt() * 45)).toInt()
     }
 
     private fun getFormattedSummary(units: String, location: String, complete: Boolean): String {
@@ -148,7 +145,7 @@ object WeatherBotData {
             }
 
             // This only shows skypowder accumulation if
-            if (null != currently.precipAccumulation() && currently.precipAccumulation() > 0) {
+            if (currently.precipAccumulation() > 0) {
                 dataBuilder.append(" || Precipitation Accumulation: ${currently.precipAccumulation()} $precipAccumUnit")
             }
 

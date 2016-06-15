@@ -22,6 +22,10 @@ import java.util.logging.Logger
 
 class WeatherBot internal constructor() : ListenerAdapter() {
 
+    companion object {
+        var partMessage = ConfigFile.partMessage
+    }
+
     private val regex = "((\\.(setlocation|(w(f|c(a?)|uk)?)(long)?)))(( ).*)?"
     private val userLocations: MutableMap<String, String>
 
@@ -53,10 +57,11 @@ class WeatherBot internal constructor() : ListenerAdapter() {
             confBuilder.addAutoJoinChannel(channel.asString)
         }
 
-        confBuilder.version = "WeatherBotKt 1.2"
+        confBuilder.version = "WeatherBotKt 1.3"
         confBuilder.isAutoNickChange = true
         confBuilder.isShutdownHookEnabled = false
         confBuilder.addListener(this)
+        confBuilder.addListener(AdminCommandListener())
         this.config = confBuilder.buildConfiguration()
 
         // Attempt to read locations file. Just use a blank map if we can't do that for some reason.
@@ -122,29 +127,21 @@ class WeatherBot internal constructor() : ListenerAdapter() {
             // Otherwise, run through the command list.
             if ("".equals(location)) {
                 event.respondWith("Please specify a location.")
-            } else if (".w".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.autoSummary(location))
-            } else if (".wf".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.fahrenheitSummary(location))
-            } else if (".wc".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.intlSummary(location))
-            } else if (".wca".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.canadaSummary(location))
-            } else if (".wuk".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.ukSummary(location))
-            } else if (".wlong".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.longAutoSummary(location))
-            } else if (".wflong".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.longFahrenheitSummary(location))
-            } else if (".wclong".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.longIntlSummary(location))
-            } else if (".wcalong".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.longCanadaSummary(location))
-            } else if (".wuklong".equals(splitMessage[0])) {
-                event.respondWith(WeatherBotData.longUKSummary(location))
-            } else if (".setlocation".equals(splitMessage[0])) {
-                userLocations[requestUser] = location
-                event.respondWith("$requestUser's location is set to: '$location'.")
+            } else when(splitMessage[0]) {
+                ".w"           -> event.respondWith(WeatherBotData.autoSummary(location))
+                ".wf"          -> event.respondWith(WeatherBotData.fahrenheitSummary(location))
+                ".wc"          -> event.respondWith(WeatherBotData.intlSummary(location))
+                ".wca"         -> event.respondWith(WeatherBotData.canadaSummary(location))
+                ".wuk"         -> event.respondWith(WeatherBotData.ukSummary(location))
+                ".wlong"       -> event.respondWith(WeatherBotData.longAutoSummary(location))
+                ".wflong"      -> event.respondWith(WeatherBotData.longFahrenheitSummary(location))
+                ".wclong"      -> event.respondWith(WeatherBotData.longIntlSummary(location))
+                ".wcalong"     -> event.respondWith(WeatherBotData.longCanadaSummary(location))
+                ".wuklong"     -> event.respondWith(WeatherBotData.longUKSummary(location))
+                ".setlocation" -> {
+                    userLocations[requestUser] = location
+                    event.respondWith("$requestUser's location is set to: '$location'.")
+                }
             }
         }
     }
@@ -169,8 +166,7 @@ class WeatherBot internal constructor() : ListenerAdapter() {
             val weatherBot = weatherBotRef.get()
             if (PircBotX.State.DISCONNECTED != thisBot.state) {
                 thisBot.stopBotReconnect()
-                thisBot.sendIRC().quitServer(ConfigFile.partMessage)
-                Logger.getLogger("WeatherBot").severe("Part Message: " + ConfigFile.partMessage)
+                thisBot.sendIRC().quitServer(WeatherBot.partMessage)
                 try {
                     if (thisBot.isConnected) {
                         // Woo reflection!

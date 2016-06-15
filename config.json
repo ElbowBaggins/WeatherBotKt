@@ -14,5 +14,6 @@
 
   "autoReconnectAttempts" : -1,
   "ssl" : true,
-  "channels" : ["#99chan"]
+  "channels" : ["#channel1", "#channel2"],
+  "adminUser" : "AdminNick"
 }

@@ -29,6 +29,7 @@ class ConfigFile private constructor() {
 
         val autoReconnectAttempts: Int by obj.byInt
         val ssl: Boolean by obj.byBool
+        val adminUser: String by obj.byString
         val channels: JsonArray by obj.byArray
 
         private fun readFile(): JsonObject {
