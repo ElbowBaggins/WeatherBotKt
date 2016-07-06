@@ -1,8 +1,10 @@
 package net.mythoclast.WeatherBotKt
 
+import net.mythoclast.WeatherBotKt.ConfigFile.Core.FORECAST_KEY
+
 import com.github.dvdme.ForecastIOLib.*
 
-object WeatherBotData {
+internal object WeatherBotData {
 
     private val ERROR_MSG = "An error occurred while attempting to contact Dark Sky."
     private val DIR_ARRAY = arrayOf("due North", "° NNE", "° NE", "° ENE", "due East", "° ESE", "° SE", "° SSE",
@@ -36,7 +38,7 @@ object WeatherBotData {
                 locationInfo.middle.toString(),
                 units,
                 ForecastIO.LANG_ENGLISH,
-                ConfigFile.forecastKey)
+                FORECAST_KEY)
 
         val unitType = FIOFlags(requestData).units() ?: return ERROR_MSG
 

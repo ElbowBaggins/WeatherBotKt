@@ -2,18 +2,21 @@
   "geocodeKey" : "GOOGLE MAPS API KEY",
   "forecastKey" : "FORECAST.IO API KEY",
 
-  "name" : "WeatherBot",
-  "nickservPassword" : "NICKSERV PASSWORD",
-  "login" : "radarkt",
-  "realName" : "Sir Wethers \"Radar\" Bottingshire IV Esq.",
-  "finger" : "FINGER RESPONSE",
-  "partMessage" : "PART MESSAGE",
-
-  "server" : "irc.somewhere.net",
-  "port" : 6697,
-
-  "autoReconnectAttempts" : -1,
-  "ssl" : true,
-  "channels" : ["#channel1", "#channel2"],
-  "adminUser" : "AdminNick"
+  "IRC" : {
+    "name": "WeatherBot",
+    "nickservPassword": "NICKSERV PASSWORD",
+    "login": "radarkt",
+    "realName": "Sir Wethers \"Radar\" Bottingshire IV Esq.",
+    "finger": "FINGER RESPONSE",
+    "partMessage": "PART MESSAGE",
+    "server": "irc.somewhere.net",
+    "port": 6697,
+    "autoReconnectAttempts": -1,
+    "ssl": true,
+    "channels": [
+      "#channel1",
+      "#channel2"
+    ],
+    "adminUser": "AdminNick"
+  }
 }

@@ -90,7 +90,7 @@
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>net.mythoclast.WeatherBotKt.WeatherBotKt</mainClass>
+                            <mainClass>net.mythoclast.WeatherBotKt.WeatherBotLauncherKt</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

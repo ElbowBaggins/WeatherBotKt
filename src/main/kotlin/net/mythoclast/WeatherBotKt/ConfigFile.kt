@@ -10,35 +10,46 @@ import java.io.IOException
 import java.util.logging.Logger
 import kotlin.system.exitProcess
 
-class ConfigFile private constructor() {
-    companion object {
-        private val obj = readFile()
-        val geocodeKey: String by obj.byString
-        val forecastKey: String by obj.byString
+internal object ConfigFile {
 
-        val name: String by obj.byString
-        val nickservPassword: String by obj.byString
+    private val configFile: JsonObject
+    private val ircConf: JsonObject
 
-        val login: String by obj.byString
-        val realName: String by obj.byString
-        val finger: String by obj.byString
-        val partMessage: String by obj.byString
+    init {
+        configFile = readFile()
+        ircConf = configFile.getAsJsonObject("IRC")
+    }
 
-        val server: String by obj.byString
-        val port: Int by obj.byInt
+    internal object Core {
+        internal val GEOCODE_KEY: String by configFile.byString
+        internal val FORECAST_KEY: String by configFile.byString
+    }
 
-        val autoReconnectAttempts: Int by obj.byInt
-        val ssl: Boolean by obj.byBool
-        val adminUser: String by obj.byString
-        val channels: JsonArray by obj.byArray
+    internal object IRC {
 
-        private fun readFile(): JsonObject {
-            try {
-                return JsonParser().parse(Files.toString(File("config.json"), Charsets.UTF_8)).asJsonObject
-            } catch (e: IOException) {
-                Logger.getLogger("WeatherBot").severe("Could not access configuration, or configuration is malformed.")
-                exitProcess(-1)
-            }
+        internal val name: String by ircConf.byString
+        internal val nickservPassword: String by ircConf.byString
+
+        internal val login: String by ircConf.byString
+        internal val realName: String by ircConf.byString
+        internal val finger: String by ircConf.byString
+        internal val partMessage: String by ircConf.byString
+
+        internal val server: String by ircConf.byString
+        internal val port: Int by ircConf.byInt
+
+        internal val autoReconnectAttempts: Int by ircConf.byInt
+        internal val ssl: Boolean by ircConf.byBool
+        internal val adminUser: String by ircConf.byString
+        internal val channels: JsonArray by ircConf.byArray
+    }
+
+    private fun readFile(): JsonObject {
+        try {
+            return JsonParser().parse(Files.toString(File("config.json"), Charsets.UTF_8)).asJsonObject
+        } catch (e: IOException) {
+            Logger.getLogger("WeatherBot").severe("Could not access configuration, or configuration is malformed.")
+            exitProcess(-1)
         }
     }
 }
