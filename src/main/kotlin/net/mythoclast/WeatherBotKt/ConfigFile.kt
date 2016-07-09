@@ -14,10 +14,12 @@ internal object ConfigFile {
 
     private val configFile: JsonObject
     private val ircConf: JsonObject
+    private val ts3Conf: JsonObject
 
     init {
         configFile = readFile()
-        ircConf = configFile.getAsJsonObject("IRC")
+        ircConf = configFile.getAsJsonObject("IRC") ?: JsonObject()
+        ts3Conf = configFile.getAsJsonObject("TS3") ?: JsonObject()
     }
 
     internal object Core {
@@ -42,6 +44,21 @@ internal object ConfigFile {
         internal val ssl: Boolean by ircConf.byBool
         internal val adminUser: String by ircConf.byString
         internal val channels: JsonArray by ircConf.byArray
+    }
+
+    internal object TS3 {
+
+        internal val host: String by ts3Conf.byString
+        internal val port: Int by ts3Conf.byInt
+
+        internal val username: String by ts3Conf.byString
+        internal val password: String by ts3Conf.byString
+        internal val vserverID: Int by ts3Conf.byInt
+        internal val nickname: String by ts3Conf.byString
+        internal val channelID: Int by ts3Conf.byInt
+        internal val channelPassword: String by ts3Conf.byString
+        internal val messageInChannel: Boolean by ts3Conf.byBool
+
     }
 
     private fun readFile(): JsonObject {

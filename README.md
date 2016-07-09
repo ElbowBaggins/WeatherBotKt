@@ -12,7 +12,7 @@ The config file needs to be in the same folder as the jar.
 You should be able to build via Maven using nothing more than the pom.xml provided. Running mvn package ought to do the trick. The JAR you want is the big one called 'WeatherBotKt.jar', unless you're some kind of crazy person that wants to hunt down all the dependencies on your own, you freak.
 
 ## Running
-     java -jar <name of jar file>
+     java -jar <name of jar file> <-IRC|-TS3|-BOTH>
 
 That's it, at least to get minimally up and running.
 I would suggest you write a launch script that stores the PID of the executing JVM in a temporary file and a shutdown script so that you can send SIGTERM to the corresponding process so you can handle everything all clean-like. I would also HIGHLY suggest you redirect the screen output (which is just logging) to a file if you're running into trouble or to /dev/null if you don't care.

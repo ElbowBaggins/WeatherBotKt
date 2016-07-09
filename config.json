@@ -13,10 +13,18 @@
     "port": 6697,
     "autoReconnectAttempts": -1,
     "ssl": true,
-    "channels": [
-      "#channel1",
-      "#channel2"
-    ],
+    "channels": ["#channel1", "#channel2"],
     "adminUser": "AdminNick"
+  },
+
+  "TS3" : {
+    "host" : "TEAMSPEAK SERVER ADDRESS, PORT IS TS *QUERY* PORT, NOT USER PORT",
+    "port" : 1101,
+    "username" : "WeatherBot",
+    "password" : "TS QUERY PASSWORD",
+    "vserverID" : 1,
+    "nickname" : "WeatherBot",
+    "channelID" : 0,
+    "messageInChannel" : false
   }
 }
