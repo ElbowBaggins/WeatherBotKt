@@ -34,7 +34,9 @@ internal object WeatherBotCore {
         })
     }
 
-    internal fun getResponseForCommand(receivedCommand: String?, requestUser: String) : String? {
+    internal fun getResponseForCommand(receivedCommand: String?,
+                                       requestUser: String,
+                                       multiline: Boolean = false) : String? {
         val response: String?
         if (isValidCommand(receivedCommand)) {
 
@@ -75,16 +77,16 @@ internal object WeatherBotCore {
                 if ("".equals(location)) {
                     response = "Please specify a location."
                 } else when(splitMessage[0]) {
-                    ".w"           -> response = WeatherBotData.autoSummary(location)
-                    ".wf"          -> response = WeatherBotData.fahrenheitSummary(location)
-                    ".wc"          -> response = WeatherBotData.intlSummary(location)
-                    ".wca"         -> response = WeatherBotData.canadaSummary(location)
-                    ".wuk"         -> response = WeatherBotData.ukSummary(location)
-                    ".wlong"       -> response = WeatherBotData.longAutoSummary(location)
-                    ".wflong"      -> response = WeatherBotData.longFahrenheitSummary(location)
-                    ".wclong"      -> response = WeatherBotData.longIntlSummary(location)
-                    ".wcalong"     -> response = WeatherBotData.longCanadaSummary(location)
-                    ".wuklong"     -> response = WeatherBotData.longUKSummary(location)
+                    ".w"           -> response = WeatherBotData.autoSummary(location, multiline)
+                    ".wf"          -> response = WeatherBotData.fahrenheitSummary(location, multiline)
+                    ".wc"          -> response = WeatherBotData.intlSummary(location, multiline)
+                    ".wca"         -> response = WeatherBotData.canadaSummary(location, multiline)
+                    ".wuk"         -> response = WeatherBotData.ukSummary(location, multiline)
+                    ".wlong"       -> response = WeatherBotData.longAutoSummary(location, multiline)
+                    ".wflong"      -> response = WeatherBotData.longFahrenheitSummary(location, multiline)
+                    ".wclong"      -> response = WeatherBotData.longIntlSummary(location, multiline)
+                    ".wcalong"     -> response = WeatherBotData.longCanadaSummary(location, multiline)
+                    ".wuklong"     -> response = WeatherBotData.longUKSummary(location, multiline)
                     ".setlocation" -> {
                         userLocations[requestUser] = location
                         response = "$requestUser's location is set to: '$location'."

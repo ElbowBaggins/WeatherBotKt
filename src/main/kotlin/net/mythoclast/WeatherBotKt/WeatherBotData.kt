@@ -15,7 +15,7 @@ internal object WeatherBotData {
 
         if(bearingDirection.startsWith("due")) {
             if(1 > bearing % 90.0) {
-                return bearingDirection;
+                return bearingDirection
             }
             bearingDirection = getBearingDirection(bearing + 22.5)
         }
@@ -30,7 +30,11 @@ internal object WeatherBotData {
         return Math.abs(bearing - (((bearing / 45) % 9).toInt() * 45)).toInt()
     }
 
-    private fun getFormattedSummary(units: String, location: String, complete: Boolean): String {
+    private fun getFormattedSummary(units: String,
+                                    location: String,
+                                    complete: Boolean,
+                                    multiline: Boolean = false): String {
+
         val locationInfo = Locator.getLatLongAndAddressForName(location) ?:
                 return "Could not get location data for \"$location\""
 
@@ -48,7 +52,9 @@ internal object WeatherBotData {
         var pressureUnit = "mb"
         var precipIntensityUnit = "in./hr"
         var precipAccumUnit = "in."
-
+        
+        val divider = if(multiline)  "\n"  else  " || "
+        
         if (ForecastIO.UNITS_US != unitType) {
             degreeUnit = "°C"
 
@@ -73,17 +79,17 @@ internal object WeatherBotData {
 
         // Build response String
         val dataBuilder = StringBuilder()
-        dataBuilder.append("Weather data for ${locationInfo.right} || Current Conditions: ")
+        dataBuilder.append("Weather data for ${locationInfo.right}${divider}Current Conditions: ")
                    .append(currently.summary() ?: "Unknown")
 
         if(complete) {
-            dataBuilder.append(" || Today's Forecast: ${daily.summary() ?: "Unknown"}")
+            dataBuilder.append("${divider}Today's Forecast: ${daily.summary() ?: "Unknown"}")
         }
 
         // We're going to have to make sure *nothing* is null if we want this to look even remotely nice.
         // Don't show the temperature block at all if it's not available.
         if (null != currently.temperature()) {
-            dataBuilder.append(" || Current Temperature: ${currently.apparentTemperature()}$degreeUnit")
+            dataBuilder.append("${divider}Current Temperature: ${currently.apparentTemperature()}$degreeUnit")
 
             // Don't show a null "Feels like" block.
             if (null != currently.apparentTemperature() && currently.apparentTemperature() != currently.temperature()) {
@@ -93,7 +99,7 @@ internal object WeatherBotData {
 
         // Don't show the hi/lo forecast if unavailable.
         if (null != daily.temperatureMax() && null != daily.temperatureMin()) {
-            dataBuilder.append(" || Hi/Lo: ${daily.temperatureMax()}/${daily.temperatureMin()}$degreeUnit")
+            dataBuilder.append("${divider}Hi/Lo: ${daily.temperatureMax()}/${daily.temperatureMin()}$degreeUnit")
 
             // Don't show the hi/lo "Feels like" if unavailable.
             if (null != daily.apparentTemperatureMax() && null != daily.apparentTemperatureMin()) {
@@ -103,23 +109,23 @@ internal object WeatherBotData {
 
         // Figure it out.
         if (null != currently.dewPoint()) {
-            dataBuilder.append(" || Dew Point: ${currently.dewPoint()}$degreeUnit")
+            dataBuilder.append("${divider}Dew Point: ${currently.dewPoint()}$degreeUnit")
         }
 
         // I mean really.
         if (null != currently.humidity()) {
-            dataBuilder.append(" || Humidity: ${String.format("%.0f", currently.humidity() * 100)}%")
+            dataBuilder.append("${divider}Humidity: ${String.format("%.0f", currently.humidity() * 100)}%")
         }
 
         // Duh.
         if (null != currently.windSpeed()) {
 
             if (0.0 == currently.windSpeed()) {
-                dataBuilder.append(" || Wind: Still")
+                dataBuilder.append("${divider}Wind: Still")
             } else {
 
                 // Only show numeric wind speed if it is windy
-                dataBuilder.append(" || Wind Speed: ${currently.windSpeed()} $windUnit")
+                dataBuilder.append("${divider}Wind Speed: ${currently.windSpeed()} $windUnit")
 
                 // Only show the wind bearing if we got it in our response
                 if (null != currently.windBearing()) {
@@ -133,32 +139,32 @@ internal object WeatherBotData {
 
             // This does exactly what you think.
             if (null != currently.visibility()) {
-                dataBuilder.append(" || Visibility: ${currently.visibility()} $distanceUnit")
+                dataBuilder.append("${divider}Visibility: ${currently.visibility()} $distanceUnit")
             }
 
             // So does this
             if (null != currently.pressure()) {
-                dataBuilder.append(" || Pressure: ${currently.pressure()} $pressureUnit")
+                dataBuilder.append("${divider}Pressure: ${currently.pressure()} $pressureUnit")
             }
 
             // This only shows precipitation intensity if something very skywatery is happenng.
             if (null != currently.precipIntensity() && currently.precipIntensity() > 0) {
-                dataBuilder.append(" || Precipitation Intensity: ${currently.precipIntensity()}$precipIntensityUnit")
+                dataBuilder.append("${divider}Precipitation Intensity: ${currently.precipIntensity()}$precipIntensityUnit")
             }
 
             // This only shows skypowder accumulation if
             if (currently.precipAccumulation() > 0) {
-                dataBuilder.append(" || Precipitation Accumulation: ${currently.precipAccumulation()} $precipAccumUnit")
+                dataBuilder.append("${divider}Precipitation Accumulation: ${currently.precipAccumulation()} $precipAccumUnit")
             }
 
             if (null != currently.cloudCover()) {
-                dataBuilder.append(" || Cloud Cover: ${String.format("%.0f", currently.cloudCover() * 100.0)}%")
+                dataBuilder.append("${divider}Cloud Cover: ${String.format("%.0f", currently.cloudCover() * 100.0)}%")
             }
         }
 
         // Always show storm distance info last
         if(null != currently.nearestStormDistance() && null != currently.nearestStormBearing()) {
-            dataBuilder.append(" || The nearest storm is ")
+            dataBuilder.append("${divider}The nearest storm is ")
                     .append("${String.format("%.0f", currently.nearestStormDistance())}$distanceUnit away, ")
                     .append("${convertBearing(currently.nearestStormBearing())}.")
         }
@@ -166,43 +172,43 @@ internal object WeatherBotData {
         return dataBuilder.toString()
     }
 
-    fun autoSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_AUTO, location, false)
+    fun autoSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_AUTO, location, false, multiline)
     }
 
-    fun fahrenheitSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_US, location, false)
+    fun fahrenheitSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_US, location, false, multiline)
     }
 
-    fun canadaSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_CA, location, false)
+    fun canadaSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_CA, location, false, multiline)
     }
 
-    fun ukSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_UK, location, false)
+    fun ukSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_UK, location, false, multiline)
     }
 
-    fun intlSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_SI, location, false)
+    fun intlSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_SI, location, false, multiline)
     }
 
-    fun longAutoSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_AUTO, location, true)
+    fun longAutoSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_AUTO, location, true, multiline)
     }
 
-    fun longFahrenheitSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_US, location, true)
+    fun longFahrenheitSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_US, location, true, multiline)
     }
 
-    fun longCanadaSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_CA, location, true)
+    fun longCanadaSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_CA, location, true, multiline)
     }
 
-    fun longUKSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_UK, location, true)
+    fun longUKSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_UK, location, true, multiline)
     }
 
-    fun longIntlSummary(location: String): String {
-        return getFormattedSummary(ForecastIO.UNITS_SI, location, true)
+    fun longIntlSummary(location: String, multiline: Boolean = false): String {
+        return getFormattedSummary(ForecastIO.UNITS_SI, location, true, multiline)
     }
 }
