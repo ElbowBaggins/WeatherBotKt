@@ -68,9 +68,11 @@ internal object WeatherBotTS3 : TS3EventAdapter() {
         val requestUser = event.invokerUniqueId
 
         if(WeatherBotCore.isValidCommand(event.message)) {
-            sendMessage("\n" + WeatherBotCore.getResponseForCommand(event.message, requestUser, true) ?: "")
+            sendMessage("\n" + WeatherBotCore.getResponseForCommand(event.message, requestUser, true))
+        } else if (event.invokerName != TS3.nickname){
+            URLTitler.getListOfTitlesForMessage(event.message)?.let {
+                sendMessage(it)
+            }
         }
-
     }
-
 }

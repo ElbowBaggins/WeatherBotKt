@@ -88,49 +88,46 @@ internal object WeatherBotData {
 
         // We're going to have to make sure *nothing* is null if we want this to look even remotely nice.
         // Don't show the temperature block at all if it's not available.
-        if (null != currently.temperature()) {
-            dataBuilder.append("${divider}Current Temperature: ${currently.apparentTemperature()}$degreeUnit")
+        currently.temperature()?.let {
+            dataBuilder.append("${divider}Current Temperature: $it$degreeUnit")
 
             // Don't show a null "Feels like" block.
-            if (null != currently.apparentTemperature() && currently.apparentTemperature() != currently.temperature()) {
-                dataBuilder.append(" (Feels like ${currently.apparentTemperature()}$degreeUnit)")
+            currently.apparentTemperature()?.let {
+                dataBuilder.append(" (Feels like $it$degreeUnit)")
             }
         }
 
-        // Don't show the hi/lo forecast if unavailable.
-        if (null != daily.temperatureMax() && null != daily.temperatureMin()) {
-            dataBuilder.append("${divider}Hi/Lo: ${daily.temperatureMax()}/${daily.temperatureMin()}$degreeUnit")
+        daily.temperatureMax()?.let {
+            dataBuilder.append("${divider}Hi: $it$degreeUnit${daily?.temperatureMin()?.let{ "/Lo: $it$degreeUnit" } ?: ""}")
 
-            // Don't show the hi/lo "Feels like" if unavailable.
-            if (null != daily.apparentTemperatureMax() && null != daily.apparentTemperatureMin()) {
-                dataBuilder.append(" (${daily.apparentTemperatureMax()}/${daily.apparentTemperatureMin()})")
+            daily.apparentTemperatureMax()?.let {
+                dataBuilder.append(" ($it$degreeUnit${daily?.temperatureMin()?.let{ "/$it$degreeUnit" } ?: ""})")
             }
         }
+
 
         // Figure it out.
-        if (null != currently.dewPoint()) {
-            dataBuilder.append("${divider}Dew Point: ${currently.dewPoint()}$degreeUnit")
+        currently.dewPoint()?.let {
+            dataBuilder.append("${divider}Dew Point: $it$degreeUnit")
         }
 
         // I mean really.
-        if (null != currently.humidity()) {
-            dataBuilder.append("${divider}Humidity: ${String.format("%.0f", currently.humidity() * 100)}%")
+        currently.humidity()?.let {
+            dataBuilder.append("${divider}Humidity: ${String.format("%.0f", it * 100)}%")
         }
 
-        // Duh.
-        if (null != currently.windSpeed()) {
-
-            if (0.0 == currently.windSpeed()) {
-                dataBuilder.append("${divider}Wind: Still")
-            } else {
-
-                // Only show numeric wind speed if it is windy
-                dataBuilder.append("${divider}Wind Speed: ${currently.windSpeed()} $windUnit")
-
-                // Only show the wind bearing if we got it in our response
-                if (null != currently.windBearing()) {
-                    dataBuilder.append(", ${convertBearing(currently.windBearing())}")
+        currently.windSpeed()?.let {
+            dataBuilder.append(divider)
+            when(it) {
+                0.0 -> dataBuilder.append("Wind: Still")
+                else -> {
+                    // Only show numeric wind speed if it is windy
+                    dataBuilder.append("Wind Speed: $it $windUnit")
                 }
+            }
+
+            currently.windBearing()?.let {
+                dataBuilder.append(", ${convertBearing(it)}")
             }
         }
 
