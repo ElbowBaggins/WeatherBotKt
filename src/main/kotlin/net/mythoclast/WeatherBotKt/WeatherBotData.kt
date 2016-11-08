@@ -162,8 +162,11 @@ internal object WeatherBotData {
         // Always show storm distance info last
         if(null != currently.nearestStormDistance() && null != currently.nearestStormBearing()) {
             dataBuilder.append("${divider}The nearest storm is ")
-                    .append("${String.format("%.0f", currently.nearestStormDistance())}$distanceUnit away, ")
-                    .append("${convertBearing(currently.nearestStormBearing())}.")
+                    if(currently.nearestStormDistance() >= 0) {
+                        dataBuilder.append("${String.format("%.0f",
+                                                            currently.nearestStormDistance())}$distanceUnit away, ")
+                    }
+                    dataBuilder.append("${convertBearing(currently.nearestStormBearing())}.")
         }
 
         return dataBuilder.toString()

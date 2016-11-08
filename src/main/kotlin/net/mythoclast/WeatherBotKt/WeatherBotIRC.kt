@@ -61,7 +61,7 @@ internal object WeatherBotIRC : ListenerAdapter() {
     }
 
     override fun onKick(event: KickEvent) {
-        if(event.recipient?.nick.equals(config.name)) {
+        if(event.recipient?.nick.equals(config.name, true)) {
             rejoin(event.channel.getBot<PircBotX>(), event.channel.name)
         }
     }
