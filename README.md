@@ -9,7 +9,7 @@ Edit the provided config.json file to fit your needs. If autoReconnectAttemps is
 The config file needs to be in the same folder as the jar.
 
 ## Building
-You should be able to build via Maven using nothing more than the pom.xml provided. Running mvn package ought to do the trick. The JAR you want is the big one called 'WeatherBotKt.jar', unless you're some kind of crazy person that wants to hunt down all the dependencies on your own, you freak.
+Use the Gradles
 
 ## Running
      java -jar <name of jar file> <-IRC|-TS3|-BOTH>
