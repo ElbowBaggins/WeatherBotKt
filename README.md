@@ -1,5 +1,5 @@
 # WeatherBotKt
-Kotlin rewrite of WeatherBot, linking against [dvdme's ForecastIO-Lib-Java](https://github.com/dvdme/forecastio-lib-java "ForecastIO-Lib-Java") for weather data and [TheLQ's PircBotX](https://github.com/TheLQ/pircbotx "PircBotX") for IRC capabilities. Provided under the WTFPL.
+Kotlin rewrite of WeatherBot, linking against [dvdme's ForecastIO-Lib-Java](https://github.com/dvdme/forecastio-lib-java "ForecastIO-Lib-Java") for weather data and [TheLQ's PircBotX](https://github.com/TheLQ/pircbotx "PircBotX") for IRC capabilities. Provided under the MIT License.
 
 Oh, and it works with Slack over their IRC gateway.
 
